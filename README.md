@@ -27,7 +27,8 @@ De igual forma existirá una carpeta llamada Referenced Libraries, con los sigui
 Los primeros tres archivos son paquetes compilados de las tareas realizadas por competidores anteriores de la UCM. El archivo PacManEngineFSM.jar es una librería que permite la realización de comportamiento inteligentes basados en Máquinas de Estado Finito (FSM's, por sus siglas en inglés).
 
 
-## ¿Cómo usar? ###
+## ¿Cómo usar? ###
+
 ### Reglas de la competición ###
 Durante el concurso, cada uno de los equipos participan con dos comportamientos inteligentes: uno para Ms Pacman y otro para los fantasmas. Luego, cada comportamiento de pacman juega 100 partidas contra cada comportamiento de los fantasmas, y las puntuaciones generadas se promedian.   
 
@@ -37,7 +38,7 @@ Los ganadores de la competición son aquellos comportamiento de PacMan que maxim
 Estas reglas de la competición son necesarias para entender la estructura del proyecto.
 
 ### Simulación ###
-En el paquete por defecto de Eclipse, existe una clase llamada Evaluate.java, que se encarga de ejecutar las simulaciones y conseguir las puntuaciones de los comportamientos. Sólo es necesario ejecutarlo para su funcionamiento correcto (darle click al botón de "Run" en Eclipse). En este caso, está preconfigurado para enfrentar a los 5 mejores comportamientos de competiciones pasadas (ver archivo Resultados.txt).   
+En el paquete por defecto de Eclipse, existe una clase llamada Evaluate.java, que se encarga de ejecutar las simulaciones y conseguir las puntuaciones de los comportamientos. Sólo es necesario ejecutarlo para su funcionamiento correcto (darle click al botón de "Run" en Eclipse). En este caso, está preconfigurado para enfrentar a los 3 mejores comportamientos de competiciones pasadas (ver archivo Resultados.txt). Cuando se ejecuta se puede ver cómo realiza las partidas automáticametne y al finalizar presenta una lista de puntuaciones en la consola/terminal.
 
 Si se desea incluir más comportamientos en la simulación, se puede editar el archivo config.properties, añadiendo el "fully qualified name"  de la clase que implementa el comportamiento a evaluar. Este nombre es del tipo (paquete de la clase + nombre de la clase), y se recomienda guardar tales comportamientos con la siguiente nomenclatura:
  * aaaimx.genXXXX.nombreDelComportamientoPacMan.MsPacMan
@@ -65,10 +66,13 @@ Véase las clases en pacman.controllers.examples para unos ejemplos. Se recomien
 como se indicó anteriormente
 
 La elección de los movimientos dependerá de la situación del videojuego, como la cercanía de los enemigos, la presencia de frutas que dan puntos extra, la cantidad de power pills restantes, etc. Toda esta información viene dentro de la clase Game, cuya instancia es recibida por getMove y de la que hablaremos en la siguiente sección.   
- 
-### La clase Game ###
 
-Léase el archivo Archivos/game.pdf para más información sobre las variables y métodos con los que esta clase cuenta para representar el estado de una partida de MsPacMan.    
+ 
+
+### La clase Game ###
+
+
+Léase el archivo Archivos/game.pdf para más información sobre las variables y métodos con los que esta clase cuenta para representar el estado de una partida de MsPacMan.    
 
 
 
