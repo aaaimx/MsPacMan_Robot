@@ -42,7 +42,7 @@ bin/
 .mtj.tmp/
 
 # Package Files #
-*.jar (las practicas y las librerías de FSM están en jars)
+#*.jar (las practicas y las librerías de FSM están en jars)
 *.war
 *.nar
 *.ear
@@ -52,5 +52,3 @@ bin/
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-
-PacManEngineFSM-doc/
