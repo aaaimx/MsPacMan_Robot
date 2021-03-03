@@ -4,7 +4,7 @@ Repositorio del simulador del juego MsPAcMan vs Ghosts usado en la Competición 
 ## ¿Cómo instalar? ##
 
 ### Requisitos previos ###
-Se desconoce la versión de Java con la que se realizó el simulador, pero este repositorio fue usado con Java 15. Se recomienda esta versión para su uso.   
+Se desconoce la versión del JDK con la que se realizó el simulador, pero este repositorio fue usado con el JDK 15. Se recomienda esta versión para su uso.   
 
 De igual forma, esta proyecto se realizó con el IDE Eclipse, que cuenta con varias herramientas para facilitar el clonar el repositorio y comenzar a programar sin ningún otro requisito (de ahí archivos como .classpath y .project/ sean incluidos en el repositorio).
 
