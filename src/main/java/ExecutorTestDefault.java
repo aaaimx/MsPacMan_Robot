@@ -3,7 +3,9 @@
 import pacman.Executor;
 import pacman.controllers.GhostController;
 import pacman.controllers.PacmanController;
+import pacman.controllers.HumanController;
 import pacman.game.internal.POType;
+import pacman.controllers.KeyBoardInput;
 
 
 public class ExecutorTestDefault {
@@ -16,11 +18,11 @@ public class ExecutorTestDefault {
                 .setPacmanPOvisual(false) 
                 .setVisual(true)
                 .setPOType(POType.RADIUS)
-                .setScaleFactor(1.0)
+                .setScaleFactor(1.5)
                 .build();
 
-        PacmanController pacMan = new pacman.controllers.examples.PacManRandom();
-        						//new HumanController(new KeyBoardInput());
+        PacmanController pacMan = new HumanController(new KeyBoardInput());
+        		//new pacman.controllers.examples.PacManRandom();
         GhostController ghosts = new pacman.controllers.examples.GhostsRandom();
         
         System.out.println( 
