@@ -15,6 +15,7 @@ Constants.DM.PATH = PATH
 -MOVE getNextMoveAwayFromTarget(int origin, int dest, MOVE lastMoveMade, PATH metric)
 -MOVE[] getPossibleMoves(int node, MOVE lastMoveMade). Si es > 1, hay una intersección
 -int getNeighbouringNode(int node, MOVE lastMoveMade)
+-MOVE getMoveToMakeToReachDirectNeighbour(int, int)
 -int[] getShortestPath(int origin, int dest, MOVE lastMoveMade). La distancia se mide por PATH. La longitud del array es la distancia del camino.
 
 

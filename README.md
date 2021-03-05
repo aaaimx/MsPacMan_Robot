@@ -76,6 +76,16 @@ Léase el archivo Archivos/game.pdf para más información sobre las variables y
 
 
 
+## Bugs encontrados ##
+
+### Alguna clase no es reconocida por el IDE ###
+Cierra el proyecto en Eclipse, después cierra el IDE y vuelve a abrirlo después de unos segundos. Abre el proyecto y deja que recompile. Esto debería resolver los problemas. De no ser así, revisa el siguiente bug.
+
+### Alguna clase no es reconocida por el IDE (y ya he aplicado el método de la sección anterior) ###
+Asegúrate de descargar las librerías necesarias para que el proyecto funciones. Esto se realiza automáticamente por el IDe cuando abre el proyecto por primera vez, pero de no ser así, puedes forzar la descarga haciendo "maven compile" en la consola. Para esto es necesario descargar e instalar Maven de la página oficial.
+
+
+
 
 
 

@@ -115,3 +115,13 @@ es.ucm.fdi.ici.c1920.practica1.grupo07.Ghosts: 4062.01
 es.ucm.fdi.ici.c1920.practica1.grupo01.Ghosts: 4162.86
 es.ucm.fdi.ici.c1920.practica1.grupo06.Ghosts: 4384.30
 
+RESULTADOS DE LOS 3 MEJORES
+MsPacMan Ranking
+es.ucm.fdi.ici.c2021.practica2.grupo09.MsPacMan: 4023.23
+es.ucm.fdi.ici.c2021.practica1.grupo01.MsPacMan: 3849.03
+es.ucm.fdi.ici.c2021.practica1.grupo03.MsPacMan: 3143.47
+Ghosts Ranking
+es.ucm.fdi.ici.c2021.practica2.grupo03.Ghosts: 3088.43
+es.ucm.fdi.ici.c2021.practica2.grupo09.Ghosts: 3924.30
+es.ucm.fdi.ici.c2021.practica1.grupo09.Ghosts: 4003.00
+
