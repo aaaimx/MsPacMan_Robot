@@ -28,7 +28,7 @@ public class ExecutorTestDefault {
         		//new es.ucm.fdi.ici.c2021.practica2.grupo09.MsPacMan();
         		//new es.ucm.fdi.ici.c2021.practica1.grupo03.MsPacMan();
         		//new aaaimx.gen2021.fakeInjuryPacman.MsPacMan();
-        GhostController ghosts = new es.ucm.fdi.ici.c2021.practica2.grupo03.Ghosts();
+        GhostController ghosts = new es.ucm.fdi.ici.c2021.practica2.grupo09.Ghosts();
         		//new pacman.controllers.examples.GhostsRandom();
         		//new es.ucm.fdi.ici.c2021.practica2.grupo03.Ghosts();
         		//new es.ucm.fdi.ici.c2021.practica2.grupo09.Ghosts();

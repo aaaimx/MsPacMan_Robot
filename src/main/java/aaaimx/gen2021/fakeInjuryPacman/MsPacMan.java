@@ -14,124 +14,131 @@ import java.util.Arrays;
  * Class MsPacMan that implements "Fake Injury" behavior
  */
 public final class MsPacMan extends PacmanController {
+	//SHORTCUTS TO VITAL INFO ABOUT THE GAME
+	//Engine stuff
+	private int tickCount = 1;
+	private long pacmanStartTime = System.nanoTime();
+	private long pacmanPrevStartTime = System.nanoTime();
+	private GHOST[] allGhosts = GHOST.values();
 	//Pacman info
 	private int pcLocation;
 	private MOVE pcLastMove;
 	private int pcPowerTime;
 	//Enemy info
-	private GHOST[] edibleGhosts;
-	private GHOST[] nonEdibleGhosts;
+	private ArrayList<GHOST> edibleGhosts;
+	private ArrayList<Integer> edibleGhostsLocations;
+	private ArrayList<GHOST> nonEdibleGhosts;
+	private ArrayList<Integer> nonEdibleGhostsLocations;
 	//Map info
-	private int [] remPPills;
+	private int [] remPPillsLocations;
 	//Navigation info
 	private MOVE[] pcMoves;
-	private int[] route;
-	private int routeIndex;
-	//Engine stuff
-	private int tickCount = 0;
-    private MOVE[] allMoves = MOVE.values();
-    private GHOST[] allGhosts = GHOST.values();
+	
     
-    private GHOST[] getEdibleGhosts(Game game) {
+    private void getEdibleGhostsInfo(Game game) {
     	ArrayList<GHOST> ghosts = new ArrayList<GHOST>();
-    	for(GHOST ghost : this.allGhosts) if (game.isGhostEdible(ghost)) ghosts.add(ghost);
-    	return (GHOST[]) ghosts.toArray();
+    	ArrayList<Integer> locations = new ArrayList<Integer>();
+    	for(GHOST ghost : this.allGhosts) {
+    		if (game.isGhostEdible(ghost)) {
+    			ghosts.add(ghost);
+    			locations.add(game.getGhostCurrentNodeIndex(ghost));
+    		}
+    	}
+    	this.edibleGhosts = ghosts;
+    	this.edibleGhostsLocations = locations;
     }
     
-    private ArrayList<GHOST> getNonEdibleGhosts(Game game) {
+    private void getNonEdibleGhostsInfo(Game game) {
     	ArrayList<GHOST> ghosts = new ArrayList<GHOST>();
-    	for(GHOST ghost : this.allGhosts) if (!game.isGhostEdible(ghost)) ghosts.add(ghost);
-    	return ghosts;
+    	ArrayList<Integer> locations = new ArrayList<Integer>();
+    	for(GHOST ghost : this.allGhosts) {
+    		if (!game.isGhostEdible(ghost)) {
+    			ghosts.add(ghost);
+    			locations.add(game.getGhostCurrentNodeIndex(ghost));
+    		}
+    	}
+    	this.nonEdibleGhosts = ghosts;
+    	this.nonEdibleGhostsLocations = locations;
     } 
     
     private void updateGameInfo(Game game) {
     	this.tickCount += 1;
+    	this.pacmanPrevStartTime = this.pacmanStartTime;
+    	this.pacmanStartTime = System.nanoTime();
 
     	this.pcLocation = game.getPacmanCurrentNodeIndex();
     	this.pcLastMove = game.getPacmanLastMoveMade();
     	
-    	this.pcPowerTime = game.getGhostEdibleTime(GHOST.BLINKY); //TODO: Change ghost when BLINKY is eaten
-    	remPPills = game.getActivePowerPillsIndices();
+    	this.getEdibleGhostsInfo(game);
+    	this.getNonEdibleGhostsInfo(game);
     	
-    	pcMoves = game.getPossibleMoves(pcLocation, pcLastMove);
+    	if (this.edibleGhosts.size() > 0) this.pcPowerTime = game.getGhostEdibleTime(edibleGhosts.get(0));
+    	else this.pcPowerTime = 0;
+    	
+    	this.remPPillsLocations = game.getActivePowerPillsIndices();
+    	
+    	this.pcMoves = game.getPossibleMoves(pcLocation, pcLastMove);
+    }
+    
+    private void printTickInfo() {
+    	long pacmanTime = System.nanoTime() - this.pacmanStartTime;
+    	long tickTime = this.pacmanStartTime - this.pacmanPrevStartTime;
+    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanTime + " ns -  TickTime: " + tickTime/1000000 + " ms" );
     }
     
     @Override
-    public MOVE getMove(Game game, long timeDue) {
-    	long start = System.nanoTime();
+    public MOVE getMove(Game game, long timeDue) {    	
+    	//Update game info
+    	this.updateGameInfo(game);
     	
-    	
-    	
-    	//if (tickCount % 5 == 0) System.out.println();
-    		
-    	MOVE nextMove;
-    	if(pcPowerTime > 0) {
-    		nextMove = pursueGhosts(game);
-    	} else {
-    		if (remPPills.length > 0) {
-    			nextMove = goToPPill(game);
-    		} else {
-    			nextMove = this.pcMoves[0];
-    		}
-    	}
+    	//PACMAN MAIN LOGIC
+    	//Select destination based on behavior
+    	int destination = -1;
+    	if(pcPowerTime > 0) destination = getNearestEdibleGhostLocation(game); //Pursue ghosts
+    	else if (remPPillsLocations.length > 0) destination = getNearestPPillLocation(game); //Get to power pill
+    	else destination = -1; //Eat remaining pills
+    	//Navigate to destination
     	//TODO: Detect collisions with ghosts
+    	MOVE move;
+    	if(destination==-1) move = MOVE.UP;
+    	else {
+    		move = game.getNextMoveTowardsTarget(this.pcLocation, destination, Constants.DM.EUCLID);
+    	}
     	
-    	//Update engine info
-    	tickCount += 1;
-    	routeIndex -= 1;
+    	//Print tick info
+    	this.printTickInfo();
     	
-    	long time = System.nanoTime() - start;
-    	System.out.println("TIME:" + time/1000000 + " ms");
-    	
-    	return nextMove;	
-    }
-    
-    private MOVE goToPPill(Game game) {
-    	if(tickCount % 5 == 0) System.out.print("Go to Pill - ");
-    	//Compute distances to pills
-		ArrayList<Integer> ppill_distances = new ArrayList<Integer>();
-		//TODO: Translate to for each
-		for (int i=0; i<remPPills.length; i++) {
-			ppill_distances.add(game.getShortestPathDistance(pcLocation, remPPills[i], pcLastMove));
-		}
-		int nearestPPillIndex = 0;
-		for (int i=1; i<ppill_distances.size(); i++) {
-			if (ppill_distances.get(i) < ppill_distances.get(nearestPPillIndex)) nearestPPillIndex = i;
-		}
-		this.setAndConfigRoute(game.getShortestPath(pcLocation, nearestPPillIndex, pcLastMove));
-    	//Navigate calculated route
-    	MOVE move = game.getMoveToMakeToReachDirectNeighbour(pcLocation, route[routeIndex]);
     	return move;
     }
     
-    private MOVE pursueGhosts(Game game) {
-    	if(tickCount % 5 == 0) System.out.print("Pursue - ");
-    	//Calculate route to nearest ghost
-		//Get edible ghosts
-		ArrayList<GHOST> edibleGhosts = new ArrayList<GHOST>();
-		for(GHOST ghost: ghosts) if (game.isGhostEdible(ghost)) edibleGhosts.add(ghost);
+    private int getNearestPPillLocation(Game game) {
+    	if(this.tickCount % 5 == 0) System.out.print("GO TO PILL - ");
+    	//Get nearest power pill location
+		int nearestPPillLocation = -1;
+		int nearestPPillDistance = 10000;
+		for(int pPillLocation: this.remPPillsLocations) {
+			int pPillDistance = game.getShortestPathDistance(this.pcLocation, pPillLocation, this.pcLastMove);
+			if(pPillDistance < nearestPPillDistance) {
+				nearestPPillLocation = pPillLocation;
+				nearestPPillDistance = pPillDistance;
+			}
+		}
+		return nearestPPillLocation;
+    }
+    
+    private int getNearestEdibleGhostLocation(Game game) {
+    	if(tickCount % 5 == 0) System.out.print("PURSUE GHOSTS - ");
 		//Get nearest edible ghost location
-		//TODO: Handle situation where no ghost is edible
-		int nearestGhostLocation = game.getGhostCurrentNodeIndex(edibleGhosts.get(0));
-		int nearestGhostDistance = game.getShortestPathDistance(pcLocation, nearestGhostLocation);
-		for(int i=1; i<edibleGhosts.size(); i++) {
-			int ghostLocation = game.getGhostCurrentNodeIndex(edibleGhosts.get(i));
-			int ghostDistance = game.getShortestPathDistance(pcLocation, ghostLocation, pcLastMove);
+		int nearestGhostLocation = -1;
+		int nearestGhostDistance = 10000;
+		for(Integer integerGhostLocation: this.edibleGhostsLocations) {
+			int ghostLocation = integerGhostLocation.intValue();
+			int ghostDistance = game.getShortestPathDistance(this.pcLocation, ghostLocation, this.pcLastMove);
 			if (ghostDistance < nearestGhostDistance) {
 				nearestGhostLocation = ghostLocation;
 				nearestGhostDistance = ghostDistance;
 			}
 		}
-		//Calculate route to nearest ghost
-		int[] routeToGhost = game.getShortestPath(pcLocation, nearestGhostLocation, pcLastMove);
-		this.setAndConfigRoute(routeToGhost);
-    	//Navigate calculated route
-    	MOVE move = game.getMoveToMakeToReachDirectNeighbour(pcLocation, this.route[this.routeIndex]);
-    	return move;
-    }
-    
-    private void setAndConfigRoute(int[] route) {
-    	this.route = route;
-    	this.routeIndex = route.length - 1;
+		return nearestGhostLocation;
     }
 }
