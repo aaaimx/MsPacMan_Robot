@@ -27,8 +27,10 @@ public final class MsPacMan extends PacmanController {
 	//Enemy info
 	private ArrayList<GHOST> edibleGhosts;
 	private ArrayList<Integer> edibleGhostsLocations;
+	private ArrayList<Integer> edibleGhostsDistances;
 	private ArrayList<GHOST> nonEdibleGhosts;
 	private ArrayList<Integer> nonEdibleGhostsLocations;
+	private ArrayList<Integer> nonEdibleGhostsDistances;
 	//Map info
 	private int [] remPPillsLocations;
 	//Navigation info
@@ -38,23 +40,32 @@ public final class MsPacMan extends PacmanController {
     private void getEdibleGhostsInfo(Game game) {
     	ArrayList<GHOST> ghosts = new ArrayList<GHOST>();
     	ArrayList<Integer> locations = new ArrayList<Integer>();
+    	ArrayList<Integer> distances = new ArrayList<Integer>();
     	for(GHOST ghost : this.allGhosts) {
     		if (game.isGhostEdible(ghost)) {
+    			int location = game.getGhostCurrentNodeIndex(ghost);
+    			int distance = game.getShortestPathDistance(location, this.pcLocation, game.getGhostLastMoveMade(ghost));
     			ghosts.add(ghost);
-    			locations.add(game.getGhostCurrentNodeIndex(ghost));
+    			locations.add(location);
+    			distances.add(distance);
     		}
     	}
     	this.edibleGhosts = ghosts;
     	this.edibleGhostsLocations = locations;
+    	this.edibleGhostsDistances = distances;
     }
     
     private void getNonEdibleGhostsInfo(Game game) {
     	ArrayList<GHOST> ghosts = new ArrayList<GHOST>();
     	ArrayList<Integer> locations = new ArrayList<Integer>();
+    	ArrayList<Integer> distances = new ArrayList<Integer>();
     	for(GHOST ghost : this.allGhosts) {
     		if (!game.isGhostEdible(ghost)) {
+    			int location = game.getGhostCurrentNodeIndex(ghost);
+    			int distance = game.getShortestPathDistance(location, this.pcLocation, game.getGhostLastMoveMade(ghost));
     			ghosts.add(ghost);
-    			locations.add(game.getGhostCurrentNodeIndex(ghost));
+    			locations.add(location);
+    			distances.add(distance);
     		}
     	}
     	this.nonEdibleGhosts = ghosts;
@@ -83,7 +94,7 @@ public final class MsPacMan extends PacmanController {
     private void printTickInfo() {
     	long pacmanTime = System.nanoTime() - this.pacmanStartTime;
     	long tickTime = this.pacmanStartTime - this.pacmanPrevStartTime;
-    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanTime + " ns -  TickTime: " + tickTime/1000000 + " ms" );
+    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms" );
     }
     
     @Override
