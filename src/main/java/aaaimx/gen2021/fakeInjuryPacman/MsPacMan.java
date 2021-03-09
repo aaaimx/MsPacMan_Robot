@@ -14,9 +14,11 @@ import java.util.Arrays;
  * Class MsPacMan that implements "Fake Injury" behavior
  */
 public final class MsPacMan extends PacmanController {
+	//SHORTCUTS TO VITAL INFO ABOUT THE GAME
 	//Engine stuff
-	private int tickCount = 0;
-    private MOVE[] allMoves = MOVE.values();
+	private int tickCount = 1;
+	private long pacmanStartTime = System.nanoTime();
+	private long pacmanPrevStartTime = System.nanoTime();
 	private GHOST[] allGhosts = GHOST.values();
 	//Pacman info
 	private int pcLocation;
@@ -61,6 +63,8 @@ public final class MsPacMan extends PacmanController {
     
     private void updateGameInfo(Game game) {
     	this.tickCount += 1;
+    	this.pacmanPrevStartTime = this.pacmanStartTime;
+    	this.pacmanStartTime = System.nanoTime();
 
     	this.pcLocation = game.getPacmanCurrentNodeIndex();
     	this.pcLastMove = game.getPacmanLastMoveMade();
@@ -76,37 +80,39 @@ public final class MsPacMan extends PacmanController {
     	this.pcMoves = game.getPossibleMoves(pcLocation, pcLastMove);
     }
     
+    private void printTickInfo() {
+    	long pacmanTime = System.nanoTime() - this.pacmanStartTime;
+    	long tickTime = this.pacmanStartTime - this.pacmanPrevStartTime;
+    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanTime + " ns -  TickTime: " + tickTime/1000000 + " ms" );
+    }
+    
     @Override
-    public MOVE getMove(Game game, long timeDue) {
-    	//Register processing time
-    	long start = System.nanoTime();
+    public MOVE getMove(Game game, long timeDue) {    	
     	//Update game info
     	this.updateGameInfo(game);
     	
     	//PACMAN MAIN LOGIC
     	//Select destination based on behavior
-    	int destination;
+    	int destination = -1;
     	if(pcPowerTime > 0) destination = getNearestEdibleGhostLocation(game); //Pursue ghosts
     	else if (remPPillsLocations.length > 0) destination = getNearestPPillLocation(game); //Get to power pill
-    	else destination = -1; //Evade ghosts and eat remaining pills
+    	else destination = -1; //Eat remaining pills
     	//Navigate to destination
     	//TODO: Detect collisions with ghosts
     	MOVE move;
     	if(destination==-1) move = MOVE.UP;
-    	else move = game.getNextMoveTowardsTarget(this.pcLocation, destination, Constants.DM.EUCLID);
+    	else {
+    		move = game.getNextMoveTowardsTarget(this.pcLocation, destination, Constants.DM.EUCLID);
+    	}
     	
+    	//Print tick info
+    	this.printTickInfo();
     	
-    	//Update engine execution info
-    	tickCount += 1;
-    	//Print processing time
-    	long time = System.nanoTime() - start;
-    	System.out.println("Tick: " + tickCount + " - Time:" + time + " ns");
-    	
-    	return move;	
+    	return move;
     }
     
     private int getNearestPPillLocation(Game game) {
-    	if(tickCount % 5 == 0) System.out.print("GO TO PILL - ");
+    	if(this.tickCount % 5 == 0) System.out.print("GO TO PILL - ");
     	//Get nearest power pill location
 		int nearestPPillLocation = -1;
 		int nearestPPillDistance = 10000;
