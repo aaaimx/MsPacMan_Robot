@@ -33,6 +33,7 @@ public final class MsPacMan extends PacmanController {
 	private ArrayList<Integer> nonEdibleGhostsDistances;
 	//Map info
 	private int [] remPPillsLocations;
+	private ArrayList<Integer> remPPillsDistances;
 	//Navigation info
 	private MOVE[] pcMoves;
 	
@@ -87,6 +88,9 @@ public final class MsPacMan extends PacmanController {
     	else this.pcPowerTime = 0;
     	
     	this.remPPillsLocations = game.getActivePowerPillsIndices();
+    	ArrayList<Integer> distances = new ArrayList<Integer>();
+    	for (int pPillLocation: this.remPPillsLocations) distances.add(game.getShortestPathDistance(this.pcLocation, pPillLocation, this.pcLastMove));
+    	this.remPPillsDistances = distances;
     	
     	this.pcMoves = game.getPossibleMoves(pcLocation, pcLastMove);
     }
@@ -152,4 +156,5 @@ public final class MsPacMan extends PacmanController {
 		}
 		return nearestGhostLocation;
     }
+    
 }

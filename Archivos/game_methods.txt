@@ -6,6 +6,10 @@ INFO ABOUT NPC'S
 -MOVE getGhostsLastMoveMade(GHOST ghost)
 -int getGhostEdibleTime(): si es 0 no hay power pill activa
 -int getGhostLairTime(GHOST ghost)
+-int EDIBLE_TIME
+-double GHOST_SPEED_REDUCTION
+-double LAIR_REDUCTION
+-int EAT_DISTANCE
 
 
 MOVEMENT
