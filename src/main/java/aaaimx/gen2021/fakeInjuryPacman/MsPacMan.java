@@ -181,40 +181,42 @@ public final class MsPacMan extends PacmanController {
     
     private MOVE getMoveToEvadeGhost(Game game, int destination) {
     	//For each move MsPacman can make, calculate metrics about its path
-    	ArrayList<ArrayList> allMetrics = new ArrayList<ArrayList>();
+    	ArrayList<int[]> allMetrics = new ArrayList<int[]>();
     	for(MOVE move: this.pcMoves) {
-    		int origin = 0; //game.getReachableNodeIfMoveIsMade(move)
-    		int[] metrics = calculatePathMetrics(game, origin, destination, move);
+    		int newOrigin = game.getNeighbour(this.pcLocation, move);
+    		int[] metrics = calculatePathMetrics(game, newOrigin, destination, move);
     		allMetrics.add(metrics);
     	}
     	//Select best move to make given alternate paths metrics
     	//Ranking criteria: No collision, highest score, longer collision distance  
-    	MOVE bestMove;
-    	ArrayList<ArrayList> nonCollisionMetrics = new ArrayList<ArrayList>();
+    	//First phase, detect path without collision for further analysis
+    	ArrayList<int[]> nonCollisionMetrics = new ArrayList<int[]>();
     	ArrayList<MOVE> nonCollisionMoves = new ArrayList<MOVE>();
     	for(int i=0; i<allMetrics.size(); i++) {
-    		if (allMetrics.get(i)[0] == -1) {
-    			nonCollisionMetrics.add(metrics);
-    			nonCollisionMoves.add(move);
+    		int collition = allMetrics.get(i)[0];
+    		if (collition == -1) {
+    			nonCollisionMetrics.add(allMetrics.get(i));
+    			nonCollisionMoves.add(this.pcMoves[i]);
     		}
     	}
-    	//First ranking criteria. Evaluate scores for non collision paths or all paths
+    	//First ranking criteria. Evaluate scores for NON COLLISION paths (if there's any)
     	if(nonCollisionMetrics.size()>0) {
-    		int highestScoreMove;
     		int highestScore = -1;
+    		MOVE highestScoreMove = null;
     		for(int i=0; i<nonCollisionMetrics.size(); i++) {
-    			currentScore = nonCollisionMetrics.get(i)[1];
+    			int currentScore = nonCollisionMetrics.get(i)[1];
     			if (currentScore > highestScore) {
     				highestScore = currentScore;
     				highestScoreMove = nonCollisionMoves.get(i);
     			}
     		}
     		return highestScoreMove;
+    	//Second ranking criteria. Evaluate scores for COLLISION paths
     	} else {
-    		int highestScoreMove;
     		int highestScore = -1;
+    		MOVE highestScoreMove = null;
     		for(int i=0; i<allMetrics.size(); i++) {
-    			currentScore = allMetrics.get(i)[1];
+    			int currentScore = allMetrics.get(i)[1];
     			if (currentScore > highestScore) {
     				highestScore = currentScore;
     				highestScoreMove = this.pcMoves[i];
