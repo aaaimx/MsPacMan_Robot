@@ -21,9 +21,9 @@ public final class MsPacMan extends PacmanController {
 	private long pacmanPrevStartTime = System.nanoTime();
 	private GHOST[] allGhosts = GHOST.values();
 	//Pacman info
-	private int pcLocation;
-	private MOVE pcLastMove;
-	private int pcPowerTime;
+	private int pacmanLocation;
+	private MOVE pacmanLastMove;
+	private int pacmanPowerTime;
 	//Enemy info
 	private ArrayList<GHOST> edibleGhosts;
 	private ArrayList<Integer> edibleGhostsLocations;
@@ -45,15 +45,13 @@ public final class MsPacMan extends PacmanController {
     	for(GHOST ghost : this.allGhosts) {
     		if (game.isGhostEdible(ghost)) {
     			int location = game.getGhostCurrentNodeIndex(ghost);
-    			int distance = game.getShortestPathDistance(location, this.pcLocation, game.getGhostLastMoveMade(ghost));
     			ghosts.add(ghost);
     			locations.add(location);
-    			distances.add(distance);
     		}
     	}
     	this.edibleGhosts = ghosts;
     	this.edibleGhostsLocations = locations;
-    	this.edibleGhostsDistances = distances;
+    	//this.edibleGhostsDistances = distances;
     }
     
     private void getNonEdibleGhostsInfo(Game game) {
@@ -63,10 +61,10 @@ public final class MsPacMan extends PacmanController {
     	for(GHOST ghost : this.allGhosts) {
     		if (!game.isGhostEdible(ghost)) {
     			int location = game.getGhostCurrentNodeIndex(ghost);
-    			int distance = game.getShortestPathDistance(location, this.pcLocation, game.getGhostLastMoveMade(ghost));
+    			//int distance = game.getShortestPathDistance(location, this.pacmanLocation, game.getGhostLastMoveMade(ghost));
     			ghosts.add(ghost);
     			locations.add(location);
-    			distances.add(distance);
+    			//distances.add(distance);
     		}
     	}
     	this.nonEdibleGhosts = ghosts;
@@ -78,21 +76,21 @@ public final class MsPacMan extends PacmanController {
     	this.pacmanPrevStartTime = this.pacmanStartTime;
     	this.pacmanStartTime = System.nanoTime();
 
-    	this.pcLocation = game.getPacmanCurrentNodeIndex();
-    	this.pcLastMove = game.getPacmanLastMoveMade();
+    	this.pacmanLocation = game.getPacmanCurrentNodeIndex();
+    	this.pacmanLastMove = game.getPacmanLastMoveMade();
     	
     	this.getEdibleGhostsInfo(game);
     	this.getNonEdibleGhostsInfo(game);
     	
-    	if (this.edibleGhosts.size() > 0) this.pcPowerTime = game.getGhostEdibleTime(edibleGhosts.get(0));
-    	else this.pcPowerTime = 0;
+    	if (this.edibleGhosts.size() > 0) this.pacmanPowerTime = game.getGhostEdibleTime(edibleGhosts.get(0));
+    	else this.pacmanPowerTime = 0;
     	
     	this.remPPillsLocations = game.getActivePowerPillsIndices();
     	ArrayList<Integer> distances = new ArrayList<Integer>();
-    	for (int pPillLocation: this.remPPillsLocations) distances.add(game.getShortestPathDistance(this.pcLocation, pPillLocation, this.pcLastMove));
+    	for (int pPillLocation: this.remPPillsLocations) distances.add(game.getShortestPathDistance(this.pacmanLocation, pPillLocation, this.pacmanLastMove));
     	this.remPPillsDistances = distances;
     	
-    	this.pcMoves = game.getPossibleMoves(pcLocation, pcLastMove);
+    	this.pcMoves = game.getPossibleMoves(this.pacmanLocation, this.pacmanLastMove);
     }
     
     private void printTickInfo() {
@@ -107,19 +105,11 @@ public final class MsPacMan extends PacmanController {
     	this.updateGameInfo(game);
     	
     	//PACMAN MAIN LOGIC
-    	//Select destination based on behavior
-    	int destination = -1;
-    	if(pcPowerTime > 0) destination = getNearestEdibleGhostLocation(game); //Pursue ghosts
-    	else if (remPPillsLocations.length > 0) destination = getNearestPPillLocation(game); //Get to power pill
-    	else destination = -1; //Eat remaining pills
-    	//Navigate to destination
-    	//TODO: Detect collisions with ghosts
     	MOVE move;
-    	if(destination==-1) move = MOVE.UP;
-    	else {
-    		move = game.getNextMoveTowardsTarget(this.pcLocation, destination, Constants.DM.EUCLID);
-    	}
-    	
+    	if(this.pacmanPowerTime > 0) move = getMoveToPursueGhosts(game);
+    	else if (remPPillsLocations.length > 0) move = getMoveToGoToPowerPill(game);
+    	else move = MOVE.UP; //Eat remaining pills
+
     	//Print tick info
     	this.printTickInfo();
     	
@@ -132,7 +122,7 @@ public final class MsPacMan extends PacmanController {
 		int nearestPPillLocation = -1;
 		int nearestPPillDistance = 10000;
 		for(int pPillLocation: this.remPPillsLocations) {
-			int pPillDistance = game.getShortestPathDistance(this.pcLocation, pPillLocation, this.pcLastMove);
+			int pPillDistance = game.getShortestPathDistance(this.pacmanLocation, pPillLocation, this.pacmanLastMove);
 			if(pPillDistance < nearestPPillDistance) {
 				nearestPPillLocation = pPillLocation;
 				nearestPPillDistance = pPillDistance;
@@ -148,7 +138,7 @@ public final class MsPacMan extends PacmanController {
 		int nearestGhostDistance = 10000;
 		for(Integer integerGhostLocation: this.edibleGhostsLocations) {
 			int ghostLocation = integerGhostLocation.intValue();
-			int ghostDistance = game.getShortestPathDistance(this.pcLocation, ghostLocation, this.pcLastMove);
+			int ghostDistance = game.getShortestPathDistance(this.pacmanLocation, ghostLocation, this.pacmanLastMove);
 			if (ghostDistance < nearestGhostDistance) {
 				nearestGhostLocation = ghostLocation;
 				nearestGhostDistance = ghostDistance;
@@ -160,10 +150,10 @@ public final class MsPacMan extends PacmanController {
     private MOVE getMoveToPursueGhosts(Game game) {
     	MOVE nextMove;
     	int destination = getNearestEdibleGhostLocation(game);
-    	if(game.isJunction(this.pcLocation)) {
+    	if(game.isJunction(this.pacmanLocation)) {
     		nextMove = getMoveToEvadeGhost(game, destination);
     	} else {
-    		nextMove = game.getNextMoveTowardsTarget(this.pcLocation, destination, this.pcLastMove, Constants.DM.EUCLID);
+    		nextMove = game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
     	}
     	return nextMove;
     }
@@ -171,10 +161,10 @@ public final class MsPacMan extends PacmanController {
     private MOVE getMoveToGoToPowerPill(Game game) {
     	MOVE nextMove;
     	int destination = getNearestPPillLocation(game);
-    	if(game.isJunction(this.pcLocation)) {
+    	if(game.isJunction(this.pacmanLocation)) {
     		nextMove = getMoveToEvadeGhost(game, destination);
     	} else {
-    		nextMove = game.getNextMoveTowardsTarget(this.pcLocation, destination, this.pcLastMove, Constants.DM.EUCLID);
+    		nextMove = game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
     	}
     	return nextMove;
     }
@@ -183,28 +173,29 @@ public final class MsPacMan extends PacmanController {
     	//For each move MsPacman can make, calculate metrics about its path
     	ArrayList<int[]> allMetrics = new ArrayList<int[]>();
     	for(MOVE move: this.pcMoves) {
-    		int newOrigin = game.getNeighbour(this.pcLocation, move);
-    		int[] metrics = calculatePathMetrics(game, newOrigin, destination, move);
+    		int futurePacmanLocation = game.getNeighbour(this.pacmanLocation, move); //Advance one move to force different path finding
+    		int[] metrics = calculatePathMetrics(game, futurePacmanLocation, destination, move);
     		allMetrics.add(metrics);
     	}
+    	printAllPathsMetrics(allMetrics);
     	//Select best move to make given alternate paths metrics
     	//Ranking criteria: No collision, highest score, longer collision distance  
-    	//First phase, detect path without collision for further analysis
+    	//First phase, detect paths without collision for further analysis
     	ArrayList<int[]> nonCollisionMetrics = new ArrayList<int[]>();
     	ArrayList<MOVE> nonCollisionMoves = new ArrayList<MOVE>();
     	for(int i=0; i<allMetrics.size(); i++) {
     		int collition = allMetrics.get(i)[0];
-    		if (collition == -1) {
+    		if (collition == 0) {
     			nonCollisionMetrics.add(allMetrics.get(i));
     			nonCollisionMoves.add(this.pcMoves[i]);
     		}
     	}
-    	//First ranking criteria. Evaluate scores for NON COLLISION paths (if there's any)
+    	//First ranking criteria. Evaluate scores for NON COLLISION paths (if there is any)
     	if(nonCollisionMetrics.size()>0) {
     		int highestScore = -1;
     		MOVE highestScoreMove = null;
     		for(int i=0; i<nonCollisionMetrics.size(); i++) {
-    			int currentScore = nonCollisionMetrics.get(i)[1];
+    			int currentScore = nonCollisionMetrics.get(i)[2];
     			if (currentScore > highestScore) {
     				highestScore = currentScore;
     				highestScoreMove = nonCollisionMoves.get(i);
@@ -216,7 +207,7 @@ public final class MsPacMan extends PacmanController {
     		int highestScore = -1;
     		MOVE highestScoreMove = null;
     		for(int i=0; i<allMetrics.size(); i++) {
-    			int currentScore = allMetrics.get(i)[1];
+    			int currentScore = allMetrics.get(i)[2];
     			if (currentScore > highestScore) {
     				highestScore = currentScore;
     				highestScoreMove = this.pcMoves[i];
@@ -227,41 +218,104 @@ public final class MsPacMan extends PacmanController {
     }
     
     private int[] calculatePathMetrics(Game game, int location, int destination, MOVE lastMoveMade) {
-    	//PARAMS
     	//Prevention range modulates area in which MsPacman will try to detect collisions
-    	//k_steps regulates granularity of collision detection
-    	int prevRangeStart = 5; int prevRangeEnd = 10; int kSteps = 5;
+    	int prevRangeStart = 1; int prevRangeEnd = 15;
+    	
+    	//Calculate future info useful during collision detection 
+    	//1) initialScore (if pacman stepped into a pill when taking a turn)
+    	int initialScore = 0;
+    	if(game.getPillIndex(location) != -1) initialScore = 10;
+    	//2) Future ghosts locations (Used when detecting collisions between junctions)
+    	ArrayList<Integer> nonEdibleGhostsFutureLocations = new ArrayList<Integer>();
+    	for (GHOST nonEdibleGhost: this.nonEdibleGhosts) {
+    		int ghostLocation = game.getGhostCurrentNodeIndex(nonEdibleGhost);
+    		MOVE ghostLastMove = game.getGhostLastMoveMade(nonEdibleGhost);
+    		//future move is null when ghost is in lair and last move was NEUTRAL
+    		MOVE ghostFutureMove = game.getNextMoveTowardsTarget(ghostLocation, this.pacmanLocation, ghostLastMove, Constants.DM.EUCLID);
+    		//and future locations is -1, when locations was 1292 (lair) and future move is null
+    		int ghostFutureLocation = game.getNeighbour(ghostLocation, ghostFutureMove);
+    		if (ghostFutureLocation == -1) ghostFutureLocation = ghostLocation;
+    		nonEdibleGhostsFutureLocations.add(ghostFutureLocation);
+    	}
     	
     	//LOGIC
+    	//If future location was already occupied or will be occupied by ghost, collision metrics are already known
+    	for(int nonEdibleGhostLocation: this.nonEdibleGhostsLocations) {
+    		if (location==nonEdibleGhostLocation) { int[] metrics = {1, 0, 0}; return metrics;}
+    	}
+    	for(int nonEdibleGhostLocation: nonEdibleGhostsFutureLocations) {
+    		if (location==nonEdibleGhostLocation) { int[] metrics = {1, 0, 0}; return metrics;}
+    	}	
+    	
+    	//Detects collisions near junctions, calculates collision distances and max score possible in path to objective
     	int[] path = game.getShortestPath(location, destination, lastMoveMade);
-    	//distPO is distance from Pacman to objective, distGO is distance from ghost to objective
-    	//For each partial objective...
-    	for(int distPO=prevRangeStart - 1; distPO < path.length && distPO < prevRangeEnd; distPO += kSteps) {
-    		ArrayList<Integer> collisionDistances = new ArrayList<Integer>();
-    		//...for each ghost, detect future collitions
-    		for(GHOST ghost: this.edibleGhosts) {
-    			int ghostLocation = game.getGhostCurrentNodeIndex(ghost);
-    			MOVE ghostLastMove = game.getGhostLastMoveMade(ghost);
-    			int distGO = game.getShortestPathDistance(ghostLocation, path[distPO], ghostLastMove);
-    			if (distGO < distPO) {
-    				int collisionDistance = distGO + (((distPO - distGO) / 2) - 1);//-1 for more precise collision detection
-    				if (collisionDistance >= 0) collisionDistances.add(collisionDistance); //TODO: Can a collision distance be negative?
+    	//For each junction in path to objective (distGO is distance from Pacman to junction (a.k.a partial Objective))...
+    	//TODO: Calculate ghost future location before to check whether they are between junctions nodes
+    	
+    	for(int distPO=prevRangeStart - 1; distPO < path.length && distPO < prevRangeEnd; distPO++) {
+    		// Special collision case: Ghost is between junctions in the current path to destination
+    		for(int i = 0; i < nonEdibleGhostsFutureLocations.size(); i++) {
+    			if(path[distPO]==nonEdibleGhostsFutureLocations.get(i).intValue()) {
+    				int collisionDist = calcCollisionDistance(distPO, 0);
+    				int[] metrics = {1, collisionDist+1, 0};
+    				metrics[2] = getPathScoreUntilCollision(game, path, collisionDist, initialScore);
+    				return metrics;
     			}
     		}
-    		//If collisions happened, calculate metrics for path (take closest collision in account)
-    		if (collisionDistances.size() > 0) {
-    			int score = 0;
-    			int minCollitionDistance = Collections.min(collisionDistances);
-    			for(int i = 0; i < minCollitionDistance; i++) if(game.getPillIndex(path[i]) != -1) score += 10;
-    			int[] metrics = {1, minCollitionDistance, score};
-    			return metrics;
+    		//
+    		if(game.isJunction(path[distPO])) {
+	    		ArrayList<Integer> collisionDistances = new ArrayList<Integer>();
+	    		//...detect collisions with any of the non edible ghosts (the ones who can kill Pacman)
+	    		for(int g = 0; g < this.nonEdibleGhosts.size(); g++) {
+	    			//Calculate future location of the ghost to be more precise with collision detection
+	    			MOVE ghostLastMove = game.getGhostLastMoveMade(this.nonEdibleGhosts.get(g));
+	    			int ghostFutureLocation = nonEdibleGhostsFutureLocations.get(g).intValue();
+	    			//Collision is based in a comparison between on who (pacman or the ghost) gets first to the junction
+	    			int distGO = game.getShortestPathDistance(ghostFutureLocation, path[distPO], ghostLastMove);
+	    			if (distGO <= distPO) collisionDistances.add(calcCollisionDistance(distPO, distPO)); //TODO: Take in account EAT_DISTANCE
+	    		}
+	    		//If collisions happened, calculate metrics for path (take closest collision in account)
+	    		//distance to collision is reduced by 1 to take in account first step boost
+	    		if (collisionDistances.size() > 0) {
+	    			int minCollisionDistance = Collections.min(collisionDistances);
+	    			int score = getPathScoreUntilCollision(game, path, minCollisionDistance, initialScore);
+	    			int[] metrics = {1, minCollisionDistance+1, score};
+	    			return metrics;
+	    		}
     		}
     	}
     	//If code got here, there were no collisions, but metrics are still calculated
-    	int score = 0;
-		for(int i = 0; i < prevRangeEnd; i++) if(game.getPillIndex(path[i]) != -1) score += 10;
-		int[] metrics = {-1, prevRangeEnd, score};
+		int score = getPathScoreUntilCollision(game, path, prevRangeEnd, initialScore);
+		int[] metrics = {0, prevRangeEnd+1, score};
 		return metrics;
+    }
+    
+    private int calcCollisionDistance(int PO, int GO) {
+    	int dist = GO + (PO-1-GO)/2; //-1 to take in account automatic truncation
+    	if (dist < 0) dist = 0; System.out.println("WARNING!!!!!!!!!!!   " + GO + "   " + PO + "   " + dist);
+    	return dist;
+    }
+    
+    private int getPathScoreUntilCollision(Game game, int[] path, int collisionDist, int baseScore) {
+    	int score = baseScore;
+    	for(int i = 0; i < collisionDist && i < path.length; i++) {
+    		if(game.getPillIndex(path[i]) != -1) score += 10;
+    	}
+    	return score;
+    }
+    
+    private void printAllPathsMetrics(ArrayList<int[]> allMetrics) {
+    	for(int i = 0; i < allMetrics.size(); i++) {
+    		int[] metrics = allMetrics.get(i);
+    		switch(this.pcMoves[i]) {
+    			case UP: System.out.print("UP - "); break;
+    			case DOWN: System.out.print("DOWN - "); break;
+    			case RIGHT: System.out.print("RIGHT - "); break;
+    			case LEFT: System.out.print("DOWN - "); break;
+    			case NEUTRAL: System.out.print("NEUTRAL"); break;
+    		}
+    		System.out.print("Collision: " + metrics[0] + "   Distance: " + metrics[1] + "   Score: " + metrics[2] + "\n");
+    	}
     }
     
     //The following methods are heuristics. Will be added in the next sprint.

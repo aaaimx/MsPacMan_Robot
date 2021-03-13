@@ -21,7 +21,7 @@ public class ExecutorTestDefault {
                 .setScaleFactor(1.5)
                 .build();
 
-        PacmanController pacMan = new HumanController(new KeyBoardInput());
+        PacmanController pacMan = new aaaimx.gen2021.fakeInjuryPacman.MsPacMan();
         		//new HumanController(new KeyBoardInput());
         		//new pacman.controllers.examples.PacManRandom();
         		//new es.ucm.fdi.ici.c2021.practica1.grupo01.MsPacMan();
