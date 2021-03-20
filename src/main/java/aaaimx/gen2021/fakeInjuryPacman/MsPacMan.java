@@ -17,6 +17,7 @@ public final class MsPacMan extends PacmanController {
 	//SHORTCUTS TO VITAL INFO ABOUT THE GAME
 	//Engine stuff
 	private int tickCount = 1;
+	private long highestPacmanDecisionTime = 0;
 	private long pacmanStartTime = System.nanoTime();
 	private long pacmanPrevStartTime = System.nanoTime();
 	private GHOST[] allGhosts = GHOST.values();
@@ -95,9 +96,10 @@ public final class MsPacMan extends PacmanController {
     }
     
     private void printTickInfo() {
-    	long pacmanTime = System.nanoTime() - this.pacmanStartTime;
+    	long pacmanDecisionTime = System.nanoTime() - this.pacmanStartTime;
     	long tickTime = this.pacmanStartTime - this.pacmanPrevStartTime;
-    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms" );
+    	if (pacmanDecisionTime < this.highestPacmanDecisionTime) this.highestPacmanDecisionTime = pacmanDecisionTime;
+    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanDecisionTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms" );
     }
     
     @Override
@@ -157,10 +159,10 @@ public final class MsPacMan extends PacmanController {
     		if (metrics[0]==1) {
     			nextMove = getMoveToEvadeGhost(game, destination);
     		}else {
-    			nextMove = game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
+    			nextMove = getDefaultMoveToLocation(game, destination); //game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
     		}
     	} else {
-    		nextMove = game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
+    		nextMove = getDefaultMoveToLocation(game, destination); //game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
     	}
     	return nextMove;
     }
@@ -175,12 +177,17 @@ public final class MsPacMan extends PacmanController {
     		if (metrics[0]==1 || isSafeToManeuver) {
     			nextMove = getMoveToEvadeGhost(game, destination);
     		}else {
-    			nextMove = game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
+    			nextMove = getDefaultMoveToLocation(game, destination); //game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
     		}
     	} else {
-    		nextMove = game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
+    		nextMove = getDefaultMoveToLocation(game, destination); //game.getNextMoveTowardsTarget(this.pacmanLocation, destination, this.pacmanLastMove, Constants.DM.EUCLID);
     	}
     	return nextMove;
+    }
+    
+    private MOVE getDefaultMoveToLocation(Game game, int destination) {
+    	int[] path = game.getShortestPath(this.pacmanLocation, destination, this.pacmanLastMove);
+    	return game.getMoveToMakeToReachDirectNeighbour(this.pacmanLocation, path[0]);
     }
     
     private boolean calcIfPacmanIsSafeToManuever(Game game, int objective) {
@@ -323,8 +330,14 @@ public final class MsPacMan extends PacmanController {
     
     private int getPathScoreUntilCollision(Game game, int[] path, int collisionDist, int baseScore) {
     	int score = baseScore;
+    	int[] activePillsIndices = game.getActivePillsIndices();
     	for(int i = 0; i < collisionDist && i < path.length; i++) {
-    		if(game.getPillIndex(path[i]) != -1) score += 10;
+    		for(int index: activePillsIndices) {
+    			if(path[i]==index) {
+    				score += 10;
+    				break;
+    			}
+    		}
     	}
     	return score;
     }
