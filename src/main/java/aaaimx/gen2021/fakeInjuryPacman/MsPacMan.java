@@ -9,6 +9,7 @@ import pacman.game.Game;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
+import java.util.Random;
 
 /*
  * Class MsPacMan that implements "Fake Injury" behavior
@@ -16,6 +17,7 @@ import java.util.Arrays;
 public final class MsPacMan extends PacmanController {
 	//SHORTCUTS TO VITAL INFO ABOUT THE GAME
 	//Engine stuff
+	private Random rnd = new Random();
 	private int tickCount = 1;
 	private long highestPacmanDecisionTime = 0;
 	private long pacmanStartTime = System.nanoTime();
@@ -99,7 +101,7 @@ public final class MsPacMan extends PacmanController {
     	long pacmanDecisionTime = System.nanoTime() - this.pacmanStartTime;
     	long tickTime = this.pacmanStartTime - this.pacmanPrevStartTime;
     	if (pacmanDecisionTime > this.highestPacmanDecisionTime) this.highestPacmanDecisionTime = pacmanDecisionTime;
-    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanDecisionTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms - High. Time: " + this.highestPacmanDecisionTime/1000 + " us");
+    	//System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanDecisionTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms - High. Time: " + this.highestPacmanDecisionTime/1000 + " us");
     }
     
     @Override
@@ -111,7 +113,7 @@ public final class MsPacMan extends PacmanController {
     	MOVE move;
     	if(this.pacmanPowerTime > 0) move = getMoveToPursueGhosts(game);
     	else if (remPPillsLocations.length > 0) move = getMoveToGoToPowerPill(game);
-    	else move = MOVE.UP; //Eat remaining pills
+    	else move = getMoveToEatRemPills(game); //Eat remaining pills
 
     	//Print tick info
     	this.printTickInfo();
@@ -120,7 +122,7 @@ public final class MsPacMan extends PacmanController {
     }
     
     private int getNearestPPillLocation(Game game) {
-    	if(this.tickCount % 5 == 0) System.out.print("GO TO PILL - ");
+    	//if(this.tickCount % 5 == 0) System.out.print("GO TO PILL - ");
     	//Get nearest power pill location
 		int nearestPPillLocation = -1;
 		int nearestPPillDistance = 10000;
@@ -135,7 +137,7 @@ public final class MsPacMan extends PacmanController {
     }
     
     private int getNearestEdibleGhostLocation(Game game) {
-    	if(tickCount % 5 == 0) System.out.print("PURSUE GHOSTS - ");
+    	//if(tickCount % 5 == 0) System.out.print("PURSUE GHOSTS - ");
 		//Get nearest edible ghost location
 		int nearestGhostLocation = -1;
 		int nearestGhostDistance = 10000;
@@ -148,6 +150,14 @@ public final class MsPacMan extends PacmanController {
 			}
 		}
 		return nearestGhostLocation;
+    }
+    
+    private MOVE getMoveToEatRemPills(Game game) {
+    	MOVE nextMove;
+    	int[] remPills = game.getActivePillsIndices();
+    	int destination = remPills[rnd.nextInt(remPills.length)];
+    	nextMove = getDefaultMoveToLocation(game, destination);
+    	return nextMove;
     }
     
     private MOVE getMoveToPursueGhosts(Game game) {
@@ -200,18 +210,18 @@ public final class MsPacMan extends PacmanController {
     	int objX = game.getNodeXCood(objective); int objY = game.getNodeYCood(objective);
     	double PO = Math.sqrt(Math.pow(pacmanX - objX, 2) + Math.pow(pacmanY - objY, 2));
     	
-    	System.out.print("GO TO PO RATIOS: ");
+    	//System.out.print("GO TO PO RATIOS: ");
     	
     	for(GHOST ghost: this.nonEdibleGhosts) {
     		int ghostLocation = game.getGhostCurrentNodeIndex(ghost);
     		int ghostX = game.getNodeXCood(ghostLocation); int ghostY = game.getNodeYCood(ghostLocation);
     		double GO = Math.sqrt(Math.pow(ghostX - objX, 2) + Math.pow(ghostY - objY, 2));
     		double currentGOToPORatio = GO/PO;
-    		System.out.print(currentGOToPORatio + " - ");
+    		//System.out.print(currentGOToPORatio + " - ");
     		if (currentGOToPORatio < lowestGOToPORatio) lowestGOToPORatio = currentGOToPORatio;
     		if (GO < lowestGO) lowestGO = GO;
     	}
-    	System.out.println();
+    	//System.out.println();
     	if (lowestGOToPORatio < safeGOToPORatio || lowestGO < safeGO) return false;
     	else return true;
     }
@@ -224,7 +234,7 @@ public final class MsPacMan extends PacmanController {
     		int[] metrics = calculatePathMetrics(game, futurePacmanLocation, destination, move);
     		allMetrics.add(metrics);
     	}
-    	printAllPathsMetrics(allMetrics);
+    	//printAllPathsMetrics(allMetrics);
     	//Select best move to make given alternate paths metrics
     	//Ranking criteria: No collision, highest score, longer collision distance  
     	//First phase, detect paths without collision for further analysis
