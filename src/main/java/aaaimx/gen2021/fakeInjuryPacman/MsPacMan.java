@@ -203,7 +203,7 @@ public final class MsPacMan extends PacmanController {
     private boolean calcIfPacmanIsSafeToManuever(Game game, int objective) {
     	double safeGOToPORatio = 1.42;
     	double lowestGOToPORatio = 10.0;
-    	double safeGO = 80; //20 nodes
+    	double safeGO = 40; //10 pills
     	double lowestGO = 1000;
     	
     	int pacmanX = game.getNodeXCood(this.pacmanLocation); int pacmanY = game.getNodeYCood(this.pacmanLocation);
