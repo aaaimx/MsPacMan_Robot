@@ -98,8 +98,8 @@ public final class MsPacMan extends PacmanController {
     private void printTickInfo() {
     	long pacmanDecisionTime = System.nanoTime() - this.pacmanStartTime;
     	long tickTime = this.pacmanStartTime - this.pacmanPrevStartTime;
-    	if (pacmanDecisionTime < this.highestPacmanDecisionTime) this.highestPacmanDecisionTime = pacmanDecisionTime;
-    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanDecisionTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms" );
+    	if (pacmanDecisionTime > this.highestPacmanDecisionTime) this.highestPacmanDecisionTime = pacmanDecisionTime;
+    	System.out.println("Tick: " + this.tickCount + " -  Pacman Decision Time: " + pacmanDecisionTime/1000 + " us -  TickTime: " + tickTime/1000000 + " ms - High. Time: " + this.highestPacmanDecisionTime/1000 + " us");
     }
     
     @Override
@@ -191,7 +191,29 @@ public final class MsPacMan extends PacmanController {
     }
     
     private boolean calcIfPacmanIsSafeToManuever(Game game, int objective) {
-    	return true;
+    	double safeGOToPORatio = 1.42;
+    	double lowestGOToPORatio = 10.0;
+    	double safeGO = 80; //20 nodes
+    	double lowestGO = 1000;
+    	
+    	int pacmanX = game.getNodeXCood(this.pacmanLocation); int pacmanY = game.getNodeYCood(this.pacmanLocation);
+    	int objX = game.getNodeXCood(objective); int objY = game.getNodeYCood(objective);
+    	double PO = Math.sqrt(Math.pow(pacmanX - objX, 2) + Math.pow(pacmanY - objY, 2));
+    	
+    	System.out.print("GO TO PO RATIOS: ");
+    	
+    	for(GHOST ghost: this.nonEdibleGhosts) {
+    		int ghostLocation = game.getGhostCurrentNodeIndex(ghost);
+    		int ghostX = game.getNodeXCood(ghostLocation); int ghostY = game.getNodeYCood(ghostLocation);
+    		double GO = Math.sqrt(Math.pow(ghostX - objX, 2) + Math.pow(ghostY - objY, 2));
+    		double currentGOToPORatio = GO/PO;
+    		System.out.print(currentGOToPORatio + " - ");
+    		if (currentGOToPORatio < lowestGOToPORatio) lowestGOToPORatio = currentGOToPORatio;
+    		if (GO < lowestGO) lowestGO = GO;
+    	}
+    	System.out.println();
+    	if (lowestGOToPORatio < safeGOToPORatio || lowestGO < safeGO) return false;
+    	else return true;
     }
     
     private MOVE getMoveToEvadeGhost(Game game, int destination) {
@@ -244,7 +266,7 @@ public final class MsPacMan extends PacmanController {
     
     private int[] calculatePathMetrics(Game game, int location, int destination, MOVE lastMoveMade) {
     	//Prevention range modulates area in which MsPacman will try to detect collisions
-    	int prevRangeStart = 1; int prevRangeEnd = 15;
+    	int prevRangeStart = 1; int prevRangeEnd = 40;
     	
     	//Calculate future info useful during collision detection 
     	//1) initialScore (if pacman stepped into a pill when taking a turn)
