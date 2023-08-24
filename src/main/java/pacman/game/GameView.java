@@ -572,7 +572,7 @@ public final class GameView extends JComponent {
             pack();
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
             if(desiredLocation == null) {
-                this.setLocation((int) (screen.getWidth() * 3 / 8), (int) (screen.getHeight() * 3 / 8));
+                this.setLocation((int) (screen.getWidth() * 3 / 8), 0);
             }else{
                 this.setLocation(desiredLocation);
             }

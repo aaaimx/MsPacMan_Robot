@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import pacman.controllers.Controller;
 import pacman.controllers.GhostController;
 import pacman.controllers.HumanController;
+import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Drawable;
 import pacman.game.Game;
@@ -48,6 +50,7 @@ public class Executor {
     private final int timeLimit;
     private final POType poType;
     private final int sightLimit;
+    private final boolean connectRobot;
     private final Random rnd = new Random();
     private final Function<Game, String> peek;
     private final Logger logger = LoggerFactory.getLogger(Executor.class);
@@ -68,12 +71,18 @@ public class Executor {
         private int sightLimit = 50;
         private Function<Game, String> peek = null;
 		private boolean pacmanPOvisual;
+		private boolean connectRobot = false;
 
         public Builder setPacmanPO(boolean po) {
             this.pacmanPO = po;
             return this;
         }
 
+        public Builder setConnectRobot(boolean connect) {
+            this.connectRobot = connect;
+            return this;
+        }
+        
         public Builder setGhostPO(boolean po) {
             this.ghostPO = po;
             return this;
@@ -137,7 +146,7 @@ public class Executor {
 
         public Executor build() {
         	System.err.println("MsPacMan Engine - Ingeniería de Comportamientos Inteligentes. Version "+Executor.VERSION);
-            return new Executor(pacmanPO, ghostPO, ghostsMessage, messenger, scaleFactor, setDaemon, visuals, tickLimit, timeLimit, poType, sightLimit, peek, pacmanPOvisual);
+            return new Executor(pacmanPO, ghostPO, ghostsMessage, messenger, scaleFactor, setDaemon, visuals, tickLimit, timeLimit, poType, sightLimit, peek, pacmanPOvisual, connectRobot);
         }
 
 		public Builder setPacmanPOvisual(boolean b) {
@@ -174,7 +183,43 @@ public class Executor {
         this.sightLimit = sightLimit;
         this.peek = peek;
         this.pacmanPOvisual = pacmanPOvisual;
+        this.connectRobot = false;
     }
+    
+    
+    private Executor(
+            boolean pacmanPO,
+            boolean ghostPO,
+            boolean ghostsMessage,
+            Messenger messenger,
+            double scaleFactor,
+            boolean setDaemon,
+            boolean visuals,
+            int tickLimit,
+            int timeLimit,
+            POType poType,
+            int sightLimit,
+            Function<Game, String> peek,
+            boolean pacmanPOvisual,
+            boolean connectRobot
+            ) {
+        this.pacmanPO = pacmanPO;
+        this.ghostPO = ghostPO;
+        this.ghostsMessage = ghostsMessage;
+        this.messenger = messenger;
+        this.scaleFactor = scaleFactor;
+        this.setDaemon = setDaemon;
+        this.visuals = visuals;
+        this.tickLimit = tickLimit;
+        this.timeLimit = timeLimit;
+        this.poType = poType;
+        this.sightLimit = sightLimit;
+        this.peek = peek;
+        this.pacmanPOvisual = pacmanPOvisual;
+        this.connectRobot = connectRobot;
+    }
+    
+    
 
     private static void writeStat(FileWriter writer, Stats stat, int i) throws IOException {
         writer.write(String.format("%s, %d, %f, %f, %f, %f, %d, %f, %f, %f, %d%n",
@@ -415,6 +460,10 @@ public class Executor {
         
         new Thread(pacManController).start();
         new Thread(ghostControllerCopy).start();
+        
+        RobotConnection rConn = null;
+        if(this.connectRobot)
+           rConn	 = new RobotConnection();
 
         while (!game.gameOver()) {
             if (tickLimit != -1 && tickLimit < game.getTotalTime()) {
@@ -431,7 +480,12 @@ public class Executor {
             }
 
             game.advanceGame(pacManController.getMove(), ghostControllerCopy.getMove());
-
+            
+            //notify robot
+            if(this.connectRobot)
+            	rConn.notifyMoves(pacManController.getMove(), ghostControllerCopy.getMove());
+            
+            
             if (visuals) {
                 gv.repaint();
             }
