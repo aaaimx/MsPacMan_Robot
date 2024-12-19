@@ -15,6 +15,8 @@ public final class PacManRandom extends PacmanController {
 
     @Override
     public MOVE getMove(Game game, long timeDue) {
+    	int node = game.getPacmanCurrentNodeIndex();
+    	System.out.println("nodo : "+node);
         return allMoves[rnd.nextInt(allMoves.length)];
     }
 }

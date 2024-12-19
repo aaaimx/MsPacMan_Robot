@@ -21,6 +21,7 @@ public final class GhostsRandom extends GhostController {
         moves.clear();
         for (GHOST ghostType : GHOST.values()) {
             if (game.doesGhostRequireAction(ghostType)) {
+            	System.out.println("Ghost : "+ghostType);
                 moves.put(ghostType, allMoves[rnd.nextInt(allMoves.length)]);
             }
         }

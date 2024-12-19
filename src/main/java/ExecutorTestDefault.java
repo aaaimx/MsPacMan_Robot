@@ -31,15 +31,17 @@ public class ExecutorTestDefault {
         		//new aaaimx.gen2021.fakeInjuryPacman.MsPacMan();
         GhostController ghostsAAAIMX = new aaaimx.gen2021.reactiveGhosts.Ghosts();
         GhostController ghostsUCM = new IBC.UCM.Ghosts();
-        GhostController ghostsAgre = new IBC.agressive.AggressiveGhosts();
-        System.out.println("Partida 1");
-        int match1= executor.runGame(pacMan, ghostsAgre, 30);
-        System.out.println("Partida 2");
-        int match2= executor.runGame(pacMan, ghostsUCM, 30);
-        System.out.println("Partida 3");
-        int match3= executor.runGame(pacMan, ghostsAAAIMX, 30);
-        System.out.println("Promedio");
-        System.out.println((match1+match2+match3)/3);
-        
+        //GhostController ghostsAgre = new IBC.agressive.AggressiveGhosts();
+        GhostController ghostsAgre = new pacman.controllers.examples.GhostsRandom();
+        //while(true) {
+       // System.out.println("Partida 1");
+       int match1= executor.runGame(pacMan, ghostsAgre, 100);
+       //System.out.println("Partida 2");
+       // int match2= executor.runGame(pacMan, ghostsUCM, 30);
+        //System.out.println("Partida 3");
+        //int match3= executor.runGame(pacMan, ghostsAAAIMX, 30);
+        //System.out.println("Promedio");
+        //System.out.println((match1+match2+match3)/3);
+        //}
     }
 }

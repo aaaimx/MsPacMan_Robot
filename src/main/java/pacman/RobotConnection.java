@@ -22,6 +22,7 @@ public class RobotConnection {
 	private void openServer() {
 		try {
 			ServerSocket server = new ServerSocket(5050);
+			System.out.println(server.getInetAddress());
 			System.out.println("Servidor creado");
 			client = server.accept();
 			System.out.println(client.getInetAddress());
@@ -48,14 +49,14 @@ public class RobotConnection {
 		}
 	}
 	
-	/*public static void main(String[] args) {
+	public static void main(String[] args) {
 		RobotConnection rConn = new RobotConnection();
 		MOVE moves [] = {MOVE.RIGHT,MOVE.LEFT,MOVE.UP,MOVE.DOWN};
 		Random rd = new Random();
 		while(true)
 		{
 			try {
-				MOVE t=moves[rd.nextInt(moves.length)];
+			MOVE t=moves[rd.nextInt(moves.length)];
 			rConn.notifyMoves(t, null);
 			System.out.println("Notificando: "+t);
 
@@ -65,7 +66,7 @@ public class RobotConnection {
 				e.printStackTrace();
 			}
 		}
-	}*/
+	}
 	
 	
 }
